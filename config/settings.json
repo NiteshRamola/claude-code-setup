@@ -111,8 +111,17 @@
       "Bash(docker system prune *)",
       "Bash(./deploy*)",
       "Bash(make deploy)",
+      "Bash(cat *)",
       "mcp__claude_ai_Gmail__*",
-      "mcp__claude_ai_Google_Calendar__*"
+      "mcp__claude_ai_Google_Calendar__*",
+      "mcp__claude-flow__agentdb_*",
+      "mcp__claude-flow__autopilot_*",
+      "mcp__claude-flow__wasm_*",
+      "mcp__claude-flow__ruvllm_*",
+      "mcp__claude-flow__transfer_*",
+      "mcp__claude-flow__claims_*",
+      "mcp__claude-flow__neural_*",
+      "mcp__claude-flow__daa_*"
     ]
   },
 

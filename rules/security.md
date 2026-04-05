@@ -1,6 +1,6 @@
 ---
 description: Security rules for all code changes
-globs: ["**/*.ts", "**/*.js", "**/*.py", "**/*.go", "**/*.rs", "**/*.java"]
+globs: ["**/routes/**", "**/handlers/**", "**/controllers/**", "**/middleware/**", "**/auth/**", "**/api/**", "**/*service*", "**/*repository*", "**/gateway/**"]
 ---
 
 - No secrets, API keys, or credentials in source files

@@ -63,7 +63,7 @@ if [ -f "$CLAUDE_DIR/CLAUDE.md" ]; then
   echo "  Backed up existing CLAUDE.md"
 fi
 cp "$SETUP_DIR/config/CLAUDE.md" "$CLAUDE_DIR/CLAUDE.md"
-echo "  Installed: ~/.claude/CLAUDE.md (42 lines)"
+echo "  Installed: ~/.claude/CLAUDE.md (~25 lines)"
 echo ""
 
 # ── Step 4: Install settings.json ──────────────────────────────────
@@ -105,10 +105,10 @@ done
 echo "  Installed: 6 hook scripts (executable)"
 
 # Rules
-for rule in security.md testing.md api-design.md docker.md; do
+for rule in security.md testing.md api-design.md docker.md git.md; do
   cp "$SETUP_DIR/rules/$rule" "$RULES_DIR/$rule"
 done
-echo "  Installed: 4 contextual rules"
+echo "  Installed: 5 contextual rules"
 
 # Skills
 cp "$SETUP_DIR/skills/review-pr/SKILL.md" "$SKILLS_DIR/review-pr/SKILL.md"
@@ -143,7 +143,7 @@ echo "  ~/.claude/settings.json      Permissions, hooks, env"
 echo "  ~/.claude/keybindings.json   Vim-style shortcuts"
 echo "  ~/.mcp.json                  claude-flow + code-review-graph"
 echo "  ~/.claude/hooks/             6 automation scripts"
-echo "  ~/.claude/rules/             4 contextual rules"
+echo "  ~/.claude/rules/             5 contextual rules"
 echo "  ~/.claude/skills/            2 skills (/review-pr, /new-service)"
 echo "  ~/.claude/agents/            2 subagent templates"
 echo "  ~/.claude/templates/         1 project template"

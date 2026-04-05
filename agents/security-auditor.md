@@ -1,7 +1,7 @@
 ---
 name: security-auditor
 description: Specialized subagent for security review of code changes
-model: sonnet
+model: opus
 ---
 
 # Security Auditor Agent

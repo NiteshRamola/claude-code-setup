@@ -15,7 +15,7 @@ EXT="${FILE_PATH##*.}"
 # Find project root (look for package.json, pyproject.toml, etc.)
 PROJECT_ROOT="$DIR"
 while [ "$PROJECT_ROOT" != "/" ]; do
-  if [ -f "$PROJECT_ROOT/package.json" ] || [ -f "$PROJECT_ROOT/pyproject.toml" ] || [ -f "$PROJECT_ROOT/Makefile" ]; then
+  if [ -f "$PROJECT_ROOT/package.json" ] || [ -f "$PROJECT_ROOT/pyproject.toml" ] || [ -f "$PROJECT_ROOT/go.mod" ] || [ -f "$PROJECT_ROOT/Cargo.toml" ] || [ -f "$PROJECT_ROOT/Makefile" ]; then
     break
   fi
   PROJECT_ROOT=$(dirname "$PROJECT_ROOT")

@@ -33,14 +33,15 @@ Install these BEFORE running `install.sh`:
 
 ```
 ~/.claude/
-├── CLAUDE.md                    # Global rules (42 lines)
+├── CLAUDE.md                    # Global rules (~25 lines)
 ├── settings.json                # Permissions + hooks + env
 ├── keybindings.json             # Vim-style shortcuts
 ├── rules/
 │   ├── security.md              # Loaded when editing source files
 │   ├── testing.md               # Loaded when editing test files
 │   ├── api-design.md            # Loaded when editing routes/handlers
-│   └── docker.md                # Loaded when editing Dockerfiles/compose
+│   ├── docker.md                # Loaded when editing Dockerfiles/compose
+│   └── git.md                   # Loaded when editing .gitignore/.github
 ├── skills/
 │   ├── review-pr/SKILL.md       # /review-pr command
 │   └── new-service/SKILL.md     # /new-service command
@@ -98,36 +99,33 @@ code-review-graph status   # verify: should show node/edge counts
 
 ### Development Methodology: Spec-Driven Development (SDD)
 
-Every task MUST follow this exact sequence — no exceptions, no skipping:
+Two paths based on change size:
 
+**Full SDD** (>3 files or new functionality):
 ```
  1. UNDERSTAND    Claude reads your request
-
  2. QUESTIONS     Claude asks clarifying questions until ≥95% certainty
-
  3. SPEC          Claude generates a detailed SPEC.md
-
- 4. APPROVAL      You review → "approved" or request changes
-                  Spec is frozen after approval
-
+ 4. APPROVAL      You review → "approved" or request changes (spec frozen after)
  5. CODE          Claude implements ONLY after approval
                   auto-lint + auto-graph-update fire on every edit
-
- 6. TESTS         Claude writes COMPLETE test suite
-                  (unit + integration + E2E, 100% coverage)
+ 6. TESTS         Claude writes test suite (business logic, edge cases, error paths)
                   auto-test fires when Claude stops
-
  7. ADVERSARIAL   Claude AUTOMATICALLY runs /codex:adversarial-review
    REVIEW         This is NOT optional — Claude runs it without being asked
-
  8. FIX           Claude fixes all issues found by adversarial review
-
  9. REPEAT        Steps 7-8 loop until NO critical issues remain
-
 10. COMMIT        Claude commits (prompts you before git push)
 ```
 
-**Steps 7-9 are mandatory.** Claude runs `/codex:adversarial-review` automatically after
+**Quick path** (≤3 files, no new behavior — typos, renames, config, log lines):
+```
+ 1. UNDERSTAND    Claude reads your request
+ 2. IMPLEMENT     Claude makes the change directly
+ 3. VERIFY        Lint + tests pass
+```
+
+**Steps 7-9 of full SDD are mandatory.** Claude runs `/codex:adversarial-review` automatically after
 implementation + tests. It loops until the system is stable. You do NOT need to ask for it.
 
 ### What Happens Automatically
@@ -136,7 +134,7 @@ implementation + tests. It loops until the system is stable. You do NOT need to 
 |---|---|---|
 | Session starts | `session-start.sh` | Warns: uncommitted changes, Docker not running, .env missing |
 | You type a prompt | `secret-guard.sh` | Blocks if you paste AWS keys, GitHub tokens, JWTs, DB URIs, etc. |
-| Claude runs Bash | `guard-destructive.sh` | Blocks `rm -rf /`, `sudo`, fork bombs, `dd` |
+| Claude runs Bash | `guard-destructive.sh` | Blocks fork bombs, `dd`, `mkfs`, pipe-to-exec (complements deny rules) |
 | Claude edits a file | `auto-lint.sh` | Auto-formats: Prettier (JS/TS), Black+isort (Python), gofmt (Go), rustfmt (Rust) |
 | Claude edits a file | `auto-graph-update.sh` | Incrementally updates code-review-graph |
 | Claude finishes | `auto-test.sh` | Runs tests only if source files have uncommitted changes |
@@ -147,7 +145,7 @@ implementation + tests. It loops until the system is stable. You do NOT need to 
 |---|---|---|
 | **Allow** (auto) | Runs without prompting | npm, python, go, cargo, git status/log/diff, docker compose, gh |
 | **Ask** (prompt) | Claude asks you first | git push, rm, mv, cp, docker stop, kill |
-| **Deny** (blocked) | Permanently blocked | rm -rf /, sudo, git push --force, pipe-to-bash |
+| **Deny** (blocked) | Permanently blocked | rm -rf /, sudo, git push --force, pipe-to-bash, cat, ~19 unused claude-flow tool families |
 
 ### Keybindings
 
@@ -348,6 +346,7 @@ claude-flow exposes 254 tools but we set `ENABLE_TOOL_SEARCH=auto:0` in settings
 | **Memory** | `memory_store`, `memory_search`, `memory_retrieve`, `memory_list` | Persist knowledge across agents and sessions |
 | **Task** | `task_create`, `task_assign`, `task_status`, `task_complete` | Break work into trackable units |
 | **Swarm** | `swarm_init`, `swarm_status`, `swarm_health`, `swarm_shutdown` | Coordinate multi-agent teams |
+| **Hive-Mind** | `hive-mind_init`, `hive-mind_broadcast`, `hive-mind_consensus`, `hive-mind_memory`, `hive-mind_spawn` | Multi-agent consensus, shared memory, coordinated decisions |
 | **Hooks** | `hooks_route`, `hooks_model-route` | Route tasks to the right model tier |
 | **System** | `system_status`, `system_health` | Diagnostics |
 
@@ -362,8 +361,8 @@ claude-flow exposes 254 tools but we set `ENABLE_TOOL_SEARCH=auto:0` in settings
 | `session_*` | Save/restore agent state across conversations |
 | `embeddings_*` | Semantic similarity search across codebase |
 
-**Skip (rarely needed):**
-`agentdb_*`, `autopilot_*`, `wasm_*`, `ruvllm_*`, `transfer_*`, `claims_*`, `neural_*`, `daa_*`
+**Denied (blocked in settings.json — ~19 tool families, ~150 tools removed from context):**
+`agentdb_*`, `autopilot_*`, `wasm_*`, `ruvllm_*`, `transfer_*`, `claims_*`, `neural_*`, `daa_*`, `browser_*`, `coordination_*`, `performance_*`, `embeddings_*`, `config_*`, `progress_*`, `analyze_*`, `github_*`, `workflow_*`, `terminal_*`, `guidance_*` — hard-denied in permissions, saving ~1000 tokens/turn.
 
 **Usage patterns:**
 ```
@@ -522,9 +521,10 @@ Rules load automatically based on which files you're editing:
 
 | Rule File | Loads When Editing | Key Rules |
 |---|---|---|
-| `security.md` | *.ts, *.js, *.py, *.go, *.rs | No secrets, validate inputs, least privilege, no eval() |
-| `testing.md` | tests/**, *.test.*, *.spec.* | 100% coverage, deterministic, unit+integration+E2E |
+| `security.md` | routes/**, handlers/**, middleware/**, auth/**, api/**, *service*, *repository*, gateway/** | No secrets, validate inputs, least privilege, no eval() |
+| `testing.md` | tests/**, *.test.*, *.spec.* | High coverage on business logic/edge cases, deterministic, unit+integration+E2E |
 | `api-design.md` | routes/**, handlers/**, api/** | OpenAPI docs, versioned APIs, strict contracts |
+| `git.md` | .gitignore, CHANGELOG*, .github/** | Commit conventions, branch naming, no secrets in commits |
 | `docker.md` | Dockerfile*, docker-compose*, .env* | Multi-stage builds, health checks, pinned versions |
 
 ---
@@ -615,7 +615,7 @@ Already mitigated: `ENABLE_TOOL_SEARCH=auto:0` defers all tool schemas. Only nam
 
 | File | Lines | Recommendation |
 |---|---|---|
-| Global CLAUDE.md | 42 | Under 200 (ideally under 100) |
+| Global CLAUDE.md | ~25 | Under 200 (ideally under 50) |
 | Project CLAUDE.md | 50-80 | Under 200 (project-specific only) |
 | settings.json | ~200 | Keep permissions concise with wildcards |
 | Each rule file | 10-15 | Short, focused, contextual |

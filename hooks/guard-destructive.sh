@@ -10,17 +10,17 @@ if [ -z "$COMMAND" ]; then
 fi
 
 # Patterns that should be blocked
+# Only patterns NOT already covered by settings.json deny rules
+# rm -rf /, sudo, force-push, | sh/bash are handled by deny list
 BLOCKED_PATTERNS=(
-  "rm -rf /"
-  "rm -rf /*"
-  "rm -rf ~"
-  "rm -rf ~/*"
   "mkfs\."
   "dd if=.* of=/dev/"
   "> /dev/sd"
   ":(){ :|:& };:"
   "chmod -R 777 /"
   "chown -R .* /"
+  "curl.*\| *(python|perl|ruby)"
+  "wget.*-O-.*\| *(sh|bash)"
 )
 
 COMMAND_LOWER=$(echo "$COMMAND" | tr '[:upper:]' '[:lower:]')

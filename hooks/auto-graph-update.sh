@@ -42,6 +42,6 @@ fi
 
 # Incremental update (only changed files — fast, ~1-2 seconds)
 cd "$PROJECT_ROOT"
-code-review-graph update --quiet 2>/dev/null &
+code-review-graph update --quiet >> /tmp/crg-update.log 2>&1 &
 
 exit 0

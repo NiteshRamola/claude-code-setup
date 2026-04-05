@@ -3,7 +3,7 @@ description: Testing standards for all projects
 globs: ["**/tests/**", "**/*.test.*", "**/*.spec.*", "**/test_*"]
 ---
 
-- 100% test coverage required (unit + integration + E2E)
+- High test coverage required on business logic, edge cases, and error paths (unit + integration + E2E). Skip trivial accessors and framework boilerplate.
 - All tests must be deterministic — no flaky tests, no timing dependencies
 - Unit tests: mock external dependencies, test business logic in isolation
 - Integration tests: use real databases via docker-compose or testcontainers
