@@ -278,41 +278,241 @@ Spawned for security-focused review. Checks for: injection, auth issues, secrets
 
 ---
 
-## MCP Servers
+## MCP Servers — The Power Layer
 
-### code-review-graph (22 tools)
-Always loaded. Use BEFORE Grep/Glob/Read for code exploration.
+This setup uses two MCP (Model Context Protocol) servers that give Claude superpowers beyond basic file editing. They're configured globally in `~/.mcp.json` — every project gets them automatically.
 
-**Daily use:**
-- `detect_changes` — risk-scored change analysis
-- `get_review_context` — focused review with snippets
-- `get_impact_radius` — blast radius of changes
-- `query_graph` — trace callers, callees, tests, imports
-- `semantic_search_nodes` — find code by intent
+### What is MCP?
+MCP servers are external tools that Claude Code can call during conversations. They run as background processes and expose tools via JSON-RPC. Think of them as plugins that give Claude abilities it doesn't have natively.
 
-**Weekly:**
-- `get_architecture_overview` — high-level structure
-- `list_communities` — code clusters (Leiden algorithm)
-- `get_affected_flows` — impacted execution paths
+---
 
-**Setup (once per project):**
+### claude-flow — Multi-Agent Orchestration
+
+**What it is:** An AI agent orchestration framework that lets Claude spawn, coordinate, and manage multiple parallel AI agents. Think of it as a "team manager" for Claude — instead of doing everything sequentially, Claude can delegate tasks to specialist agents that work in parallel.
+
+**Install:**
 ```bash
-code-review-graph build       # Build graph
-code-review-graph status      # Verify
+# Already handled by ~/.mcp.json — auto-starts when needed
+# Manual check:
+npx -y @claude-flow/cli@latest --version
+npx -y @claude-flow/cli@latest doctor --fix
 ```
 
-### claude-flow (254 tools, deferred loading)
-Tool schemas load on-demand via ToolSearch. Only names loaded at startup.
+**Why we use it:**
+- **Parallel execution** — spawn 5-15 agents working simultaneously on different parts of a task
+- **Persistent memory** — agents can store/retrieve knowledge across sessions (patterns, decisions, context)
+- **Swarm coordination** — hierarchical-mesh topology ensures agents don't conflict or duplicate work
+- **3-tier model routing** — simple tasks go to fast/cheap models, complex tasks go to Opus
+- **Task management** — break work into trackable units with status tracking
 
-**Essential:**
-- `agent_spawn`, `agent_status`, `agent_list`, `agent_terminate`
-- `memory_store`, `memory_search`, `memory_retrieve`
-- `task_create`, `task_assign`, `task_complete`
-- `swarm_init`, `swarm_status`, `swarm_health`
-- `hooks_route`, `hooks_model-route`
+**How it's configured (`~/.mcp.json`):**
+```json
+{
+  "mcpServers": {
+    "claude-flow": {
+      "command": "npx",
+      "args": ["-y", "@claude-flow/cli@latest", "mcp", "start"],
+      "env": {
+        "CLAUDE_FLOW_MODE": "v3",
+        "CLAUDE_FLOW_TOPOLOGY": "hierarchical-mesh",
+        "CLAUDE_FLOW_MAX_AGENTS": "15",
+        "CLAUDE_FLOW_MEMORY_BACKEND": "hybrid"
+      },
+      "autoStart": false
+    }
+  }
+}
+```
+
+**Key settings explained:**
+| Setting | Value | Why |
+|---|---|---|
+| `CLAUDE_FLOW_MODE` | v3 | Latest version with best orchestration |
+| `CLAUDE_FLOW_TOPOLOGY` | hierarchical-mesh | Leader coordinates, agents can communicate peer-to-peer |
+| `CLAUDE_FLOW_MAX_AGENTS` | 15 | Cap to prevent runaway spawning |
+| `CLAUDE_FLOW_MEMORY_BACKEND` | hybrid | Uses both in-memory (fast) and persistent (durable) storage |
+| `autoStart` | false | Only starts when Claude actually needs it (saves resources) |
+
+**Context optimization:**
+claude-flow exposes 254 tools but we set `ENABLE_TOOL_SEARCH=auto:0` in settings.json. This means:
+- Only tool **names** load at startup (minimal tokens)
+- Full tool **schemas** load on-demand when Claude needs them
+- No wasted context on tools you never use in a session
+
+**Essential tools (daily use):**
+
+| Tool Group | Tools | When to Use |
+|---|---|---|
+| **Agent** | `agent_spawn`, `agent_status`, `agent_list`, `agent_terminate` | Spawn parallel workers for large tasks |
+| **Memory** | `memory_store`, `memory_search`, `memory_retrieve`, `memory_list` | Persist knowledge across agents and sessions |
+| **Task** | `task_create`, `task_assign`, `task_status`, `task_complete` | Break work into trackable units |
+| **Swarm** | `swarm_init`, `swarm_status`, `swarm_health`, `swarm_shutdown` | Coordinate multi-agent teams |
+| **Hooks** | `hooks_route`, `hooks_model-route` | Route tasks to the right model tier |
+| **System** | `system_status`, `system_health` | Diagnostics |
+
+**Useful tools (weekly):**
+
+| Tool Group | When to Use |
+|---|---|
+| `analyze_diff*` | Pre-commit code review with risk scoring |
+| `github_*` | PR management, issue tracking, CI workflow automation |
+| `workflow_*` | Complex multi-step automation pipelines |
+| `hive-mind_*` | Multi-agent consensus for architectural decisions |
+| `session_*` | Save/restore agent state across conversations |
+| `embeddings_*` | Semantic similarity search across codebase |
 
 **Skip (rarely needed):**
 `agentdb_*`, `autopilot_*`, `wasm_*`, `ruvllm_*`, `transfer_*`, `claims_*`, `neural_*`, `daa_*`
+
+**Usage patterns:**
+```
+# Claude automatically uses claude-flow when you give it complex tasks:
+
+"Build a user authentication service with JWT, password hashing, and email verification"
+→ Claude runs swarm_init
+→ Spawns agents: coder (implementation), tester (tests), reviewer (quality)
+→ All work in parallel
+→ Results merged and reviewed
+
+"Review this PR for security issues"
+→ Claude spawns security-auditor agent
+→ Uses analyze_diff for risk scoring
+→ Parallel security + code review
+```
+
+**Orchestration rules (enforced by CLAUDE.md):**
+1. Always `swarm_init` before spawning multiple agents
+2. Spawn ALL agents in ONE message (parallel, not sequential)
+3. After spawning, STOP — don't poll status, wait for results
+4. Use `hooks_model-route` for 3-tier routing (fast model for simple tasks)
+
+---
+
+### code-review-graph — Structural Code Analysis
+
+**What it is:** A code intelligence tool that builds a knowledge graph of your codebase — every function, class, import, call relationship, and execution flow. Claude uses this graph instead of grep/read to understand code structurally.
+
+**Install:**
+```bash
+pipx install code-review-graph
+# Verify:
+code-review-graph --version
+```
+
+**Why we use it:**
+- **Faster than grep** — structured queries vs text search
+- **Cheaper** — fewer tokens than reading entire files
+- **Structural context** — callers, callees, test coverage, module boundaries
+- **Risk scoring** — automatically scores changes by blast radius and test gaps
+- **Architecture detection** — identifies code clusters and community boundaries
+
+**How it's configured (`~/.mcp.json`):**
+```json
+{
+  "mcpServers": {
+    "code-review-graph": {
+      "command": "code-review-graph",
+      "args": ["serve"],
+      "type": "stdio"
+    }
+  }
+}
+```
+
+**Setup per project (one-time):**
+```bash
+cd ~/Developer/your-project
+code-review-graph build          # Full graph build (parses all files)
+code-review-graph status         # Verify: shows node/edge counts
+```
+
+After initial build, the `auto-graph-update.sh` hook keeps it fresh — incremental updates on every file edit.
+
+**22 tools, organized by frequency:**
+
+**Every PR (daily):**
+
+| Tool | What It Does | Replaces |
+|---|---|---|
+| `detect_changes` | Risk-scored diff analysis with blast radius | Manual diff reading |
+| `get_review_context` | Token-efficient source snippets for review | Reading entire files |
+| `get_impact_radius` | What else breaks when you change something | Manually tracing imports |
+| `query_graph` | Trace callers, callees, tests, imports | Grep + manual tracing |
+| `semantic_search_nodes` | Find code by intent, not just name | Grep for keywords |
+
+**Architecture (weekly):**
+
+| Tool | What It Does |
+|---|---|
+| `get_architecture_overview` | High-level codebase structure from detected communities |
+| `list_communities` | Auto-detected code clusters (Leiden algorithm) |
+| `get_affected_flows` | Which user-facing execution paths break from a change |
+| `find_large_functions` | Flag oversized functions for refactoring |
+
+**Refactoring (on-demand):**
+
+| Tool | What It Does |
+|---|---|
+| `refactor_tool` | Preview renames, find dead code, get suggestions |
+| `apply_refactor_tool` | Apply previewed refactoring edits |
+| `build_or_update_graph` | Rebuild graph (after major changes) |
+| `embed_graph` | Compute vector embeddings for semantic search (one-time) |
+
+**Usage patterns:**
+```
+# Instead of: grep -r "functionName" src/
+Claude uses: semantic_search_nodes("functionName")
+→ Gets: function location + callers + callees + test coverage
+
+# Instead of: manually reading 20 files to understand a change
+Claude uses: detect_changes → get_impact_radius → get_affected_flows
+→ Gets: risk score, blast radius, affected user flows, test gaps
+
+# Instead of: "what does this codebase do?"
+Claude uses: get_architecture_overview → list_communities
+→ Gets: module boundaries, coupling metrics, architectural layers
+```
+
+**CLI commands (for manual use):**
+```bash
+code-review-graph build           # Full rebuild
+code-review-graph update          # Incremental update (fast)
+code-review-graph status          # Graph health check
+code-review-graph detect-changes  # CLI version of detect_changes
+code-review-graph visualize       # D3 interactive visualization
+```
+
+---
+
+### How Both Tools Work Together
+
+```
+You describe a task
+        │
+        ▼
+Claude uses code-review-graph to UNDERSTAND the codebase
+  ├── semantic_search_nodes → find relevant code
+  ├── query_graph → understand dependencies
+  ├── get_architecture_overview → see the big picture
+        │
+        ▼
+Claude uses claude-flow to EXECUTE the work
+  ├── swarm_init → set up coordination
+  ├── agent_spawn (coder) → implement changes
+  ├── agent_spawn (tester) → write tests in parallel
+  ├── memory_store → persist decisions for other agents
+        │
+        ▼
+Claude uses code-review-graph to VERIFY the changes
+  ├── detect_changes → risk-scored analysis
+  ├── get_impact_radius → blast radius check
+  ├── query_graph(tests_for) → test coverage verification
+        │
+        ▼
+Claude runs /codex:adversarial-review to VALIDATE
+  └── Loops until no critical issues remain
+```
 
 ---
 
