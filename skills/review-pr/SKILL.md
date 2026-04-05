@@ -21,12 +21,12 @@ Spawn BOTH agents in a SINGLE message to run in parallel:
 6. `list_communities` — architecture boundary check
 7. `find_large_functions` — flag oversized functions
 
-Output: summarized findings under 500 tokens (CRITICAL/WARNING/INFO with file:line).
+Output: summarized findings under 5000 tokens (CRITICAL/WARNING/INFO with file:line).
 
 ### security-auditor agent (step 8):
 8. Security scan — secrets, injection vectors, input validation gaps
 
-Output: summarized findings under 500 tokens (CRITICAL/HIGH/MEDIUM/LOW with file:line).
+Output: summarized findings under 5000 tokens (CRITICAL/HIGH/MEDIUM/LOW with file:line).
 
 ## Phase 2 — Main Context (steps 9-12)
 

@@ -27,4 +27,4 @@ Report findings as:
 - INFO: Suggestion for improvement
 
 Be specific — include file paths, line numbers, and concrete fix suggestions.
-Keep total output under 500 tokens. Bullet points, not paragraphs. Only include file:line for CRITICAL and WARNING findings.
+Keep total output under 5000 tokens. Bullet points, not paragraphs. Only include file:line for CRITICAL and WARNING findings.

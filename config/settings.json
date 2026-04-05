@@ -11,6 +11,10 @@
       "WebFetch(domain:docs.python.org)",
       "WebFetch(domain:docs.docker.com)",
       "WebFetch(domain:stackoverflow.com)",
+      "WebFetch(domain:pkg.go.dev)",
+      "WebFetch(domain:docs.rs)",
+      "WebFetch(domain:developer.mozilla.org)",
+      "WebFetch(domain:redis.io)",
 
       "Bash(npm *)",
       "Bash(npx *)",
