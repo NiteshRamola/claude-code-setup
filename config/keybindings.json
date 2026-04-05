@@ -1,0 +1,76 @@
+{
+  "$schema": "https://www.schemastore.org/claude-code-keybindings.json",
+  "bindings": [
+    {
+      "context": "Chat",
+      "bindings": {
+        "enter": "chat:submit",
+        "alt+enter": "chat:newline",
+        "ctrl+shift+p": "chat:modelPicker",
+        "ctrl+shift+t": "chat:thinkingToggle",
+        "meta+o": "chat:fastMode",
+        "ctrl+e": "chat:externalEditor",
+        "ctrl+s": "chat:stash",
+        "ctrl+shift+z": "chat:undo",
+        "ctrl+shift+x": "chat:killAgents",
+        "shift+tab": "chat:cycleMode",
+        "escape": "chat:cancel"
+      }
+    },
+    {
+      "context": "Global",
+      "bindings": {
+        "ctrl+l": "app:redraw",
+        "ctrl+t": "app:toggleTodos",
+        "ctrl+o": "app:toggleTranscript",
+        "ctrl+r": "history:search"
+      }
+    },
+    {
+      "context": "Select",
+      "bindings": {
+        "j": "select:next",
+        "k": "select:previous",
+        "enter": "select:accept",
+        "escape": "select:cancel"
+      }
+    },
+    {
+      "context": "Confirmation",
+      "bindings": {
+        "y": "confirm:yes",
+        "n": "confirm:no",
+        "enter": "confirm:yes",
+        "escape": "confirm:no"
+      }
+    },
+    {
+      "context": "DiffDialog",
+      "bindings": {
+        "escape": "diff:dismiss",
+        "h": "diff:previousSource",
+        "l": "diff:nextSource",
+        "k": "diff:previousFile",
+        "j": "diff:nextFile",
+        "enter": "diff:viewDetails"
+      }
+    },
+    {
+      "context": "MessageSelector",
+      "bindings": {
+        "j": "messageSelector:down",
+        "k": "messageSelector:up",
+        "enter": "messageSelector:select",
+        "escape": "messageSelector:exit"
+      }
+    },
+    {
+      "context": "Transcript",
+      "bindings": {
+        "e": "transcript:toggleShowAll",
+        "q": "transcript:exit",
+        "escape": "transcript:exit"
+      }
+    }
+  ]
+}

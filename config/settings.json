@@ -1,0 +1,202 @@
+{
+  "permissions": {
+    "allow": [
+      "Read",
+      "Glob",
+      "Grep",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:npmjs.com)",
+      "WebFetch(domain:pypi.org)",
+      "WebFetch(domain:docs.python.org)",
+      "WebFetch(domain:docs.docker.com)",
+      "WebFetch(domain:stackoverflow.com)",
+
+      "Bash(npm *)",
+      "Bash(npx *)",
+      "Bash(yarn *)",
+      "Bash(pnpm *)",
+      "Bash(node *)",
+      "Bash(bun *)",
+      "Bash(bunx *)",
+      "Bash(tsc *)",
+      "Bash(tsx *)",
+      "Bash(turbo *)",
+      "Bash(eslint *)",
+      "Bash(prettier *)",
+      "Bash(vitest *)",
+      "Bash(jest *)",
+
+      "Bash(python *)",
+      "Bash(python3 *)",
+      "Bash(pip *)",
+      "Bash(pipx *)",
+      "Bash(poetry *)",
+      "Bash(pdm *)",
+      "Bash(pytest *)",
+      "Bash(black *)",
+      "Bash(ruff *)",
+      "Bash(mypy *)",
+      "Bash(uvicorn *)",
+      "Bash(gunicorn *)",
+
+      "Bash(go *)",
+      "Bash(gofmt *)",
+      "Bash(golangci-lint *)",
+
+      "Bash(cargo *)",
+      "Bash(rustfmt *)",
+
+      "Bash(git status *)",
+      "Bash(git log *)",
+      "Bash(git diff *)",
+      "Bash(git branch *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git stash *)",
+      "Bash(git show *)",
+      "Bash(git blame *)",
+      "Bash(gh *)",
+
+      "Bash(docker compose *)",
+      "Bash(docker build *)",
+      "Bash(docker ps *)",
+      "Bash(docker logs *)",
+      "Bash(docker images *)",
+
+      "Bash(ls *)",
+      "Bash(pwd)",
+      "Bash(tree *)",
+      "Bash(wc *)",
+      "Bash(jq *)",
+      "Bash(curl -s *)",
+      "Bash(curl -X *)",
+      "Bash(* --version)",
+      "Bash(* --help)",
+      "Bash(which *)",
+      "Bash(mkdir *)",
+      "Bash(echo *)",
+      "Bash(code-review-graph *)"
+    ],
+
+    "ask": [
+      "Bash(git push *)",
+      "Bash(git checkout *)",
+      "Bash(git merge *)",
+      "Bash(git rebase *)",
+      "Bash(rm *)",
+      "Bash(mv *)",
+      "Bash(cp *)",
+      "Bash(chmod *)",
+      "Bash(docker stop *)",
+      "Bash(docker restart *)",
+      "Bash(kill *)"
+    ],
+
+    "deny": [
+      "Bash(rm -rf /)",
+      "Bash(rm -rf /*)",
+      "Bash(rm -rf ~)",
+      "Bash(rm -rf ~/*)",
+      "Bash(sudo *)",
+      "Bash(su *)",
+      "Bash(git push --force *)",
+      "Bash(git push -f *)",
+      "Bash(git reset --hard *)",
+      "Bash(git clean -fd *)",
+      "Bash(* | sh)",
+      "Bash(* | bash)",
+      "Bash(kubectl delete *)",
+      "Bash(docker rm -f *)",
+      "Bash(docker system prune *)",
+      "Bash(./deploy*)",
+      "Bash(make deploy)",
+      "mcp__claude_ai_Gmail__*",
+      "mcp__claude_ai_Google_Calendar__*"
+    ]
+  },
+
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash __HOME_DIR__/.claude/hooks/auto-lint.sh",
+            "timeout": 30000
+          },
+          {
+            "type": "command",
+            "command": "bash __HOME_DIR__/.claude/hooks/auto-graph-update.sh",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash __HOME_DIR__/.claude/hooks/guard-destructive.sh",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash __HOME_DIR__/.claude/hooks/auto-test.sh",
+            "timeout": 60000
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash __HOME_DIR__/.claude/hooks/secret-guard.sh",
+            "timeout": 3000
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash __HOME_DIR__/.claude/hooks/session-start.sh",
+            "timeout": 10000
+          }
+        ]
+      }
+    ]
+  },
+
+  "env": {
+    "ENABLE_TOOL_SEARCH": "auto:0"
+  },
+
+  "enabledPlugins": {
+    "codex@openai-codex": true
+  },
+  "extraKnownMarketplaces": {
+    "openai-codex": {
+      "source": {
+        "source": "github",
+        "repo": "openai/codex-plugin-cc"
+      }
+    }
+  }
+}
