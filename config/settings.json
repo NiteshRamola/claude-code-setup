@@ -183,6 +183,16 @@
             "timeout": 5000
           }
         ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash __HOME_DIR__/.claude/hooks/guard-sensitive-write.sh",
+            "timeout": 3000
+          }
+        ]
       }
     ],
     "Stop": [
