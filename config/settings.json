@@ -75,7 +75,6 @@
       "Bash(* --help)",
       "Bash(which *)",
       "Bash(mkdir *)",
-      "Bash(echo *)",
       "Bash(code-review-graph *)"
     ],
 
@@ -90,7 +89,8 @@
       "Bash(chmod *)",
       "Bash(docker stop *)",
       "Bash(docker restart *)",
-      "Bash(kill *)"
+      "Bash(kill *)",
+      "Bash(echo *)"
     ],
 
     "deny": [
@@ -121,7 +121,12 @@
       "mcp__claude-flow__transfer_*",
       "mcp__claude-flow__claims_*",
       "mcp__claude-flow__neural_*",
-      "mcp__claude-flow__daa_*"
+      "mcp__claude-flow__daa_*",
+      "Bash(env)",
+      "Bash(env *)",
+      "Bash(printenv)",
+      "Bash(printenv *)",
+      "Bash(set | *)"
     ]
   },
 
@@ -139,6 +144,16 @@
             "type": "command",
             "command": "bash __HOME_DIR__/.claude/hooks/auto-graph-update.sh",
             "timeout": 5000
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash __HOME_DIR__/.claude/hooks/truncate-test-output.sh",
+            "timeout": 3000
           }
         ]
       }

@@ -34,4 +34,18 @@ if [ -f "$PROJECT_ROOT/.env.example" ] && [ ! -f "$PROJECT_ROOT/.env" ]; then
   echo "[session-start] Warning: .env.example exists but .env is missing — run: cp .env.example .env" >&2
 fi
 
+# Check for project CLAUDE.md (remind if missing)
+if [ -d "$PROJECT_ROOT/.git" ] && [ ! -f "$PROJECT_ROOT/CLAUDE.md" ]; then
+  echo "[session-start] Warning: No CLAUDE.md found. Copy from ~/.claude/templates/PROJECT_CLAUDE_MD.md" >&2
+fi
+
+# Check for stale memory files (older than 90 days)
+MEMORY_DIR="$HOME/.claude/projects"
+if [ -d "$MEMORY_DIR" ]; then
+  STALE=$(find "$MEMORY_DIR" -name "*.md" -not -name "MEMORY.md" -mtime +90 2>/dev/null | wc -l | tr -d ' ')
+  if [ "$STALE" -gt 0 ]; then
+    echo "[session-start] Notice: $STALE memory files older than 90 days — consider reviewing for staleness" >&2
+  fi
+fi
+
 exit 0

@@ -98,11 +98,11 @@ echo ""
 echo "[7/8] Installing hooks, rules, skills, agents..."
 
 # Hooks
-for hook in auto-lint.sh auto-test.sh auto-graph-update.sh guard-destructive.sh secret-guard.sh session-start.sh; do
+for hook in auto-lint.sh auto-test.sh auto-graph-update.sh guard-destructive.sh secret-guard.sh session-start.sh truncate-test-output.sh; do
   cp "$SETUP_DIR/hooks/$hook" "$HOOKS_DIR/$hook"
   chmod +x "$HOOKS_DIR/$hook"
 done
-echo "  Installed: 6 hook scripts (executable)"
+echo "  Installed: 7 hook scripts (executable)"
 
 # Rules
 for rule in security.md testing.md api-design.md docker.md git.md; do
@@ -142,7 +142,7 @@ echo "  ~/.claude/CLAUDE.md          Global rules (SDD, 95% certainty)"
 echo "  ~/.claude/settings.json      Permissions, hooks, env"
 echo "  ~/.claude/keybindings.json   Vim-style shortcuts"
 echo "  ~/.mcp.json                  claude-flow + code-review-graph"
-echo "  ~/.claude/hooks/             6 automation scripts"
+echo "  ~/.claude/hooks/             7 automation scripts"
 echo "  ~/.claude/rules/             5 contextual rules"
 echo "  ~/.claude/skills/            2 skills (/review-pr, /new-service)"
 echo "  ~/.claude/agents/            2 subagent templates"

@@ -28,8 +28,20 @@ case "$EXT" in
     # Try prettier first, then eslint
     if command -v npx &>/dev/null && [ -f "node_modules/.bin/prettier" ]; then
       npx prettier --write "$FILE_PATH" 2>/dev/null
-    elif command -v npx &>/dev/null && [ -f "node_modules/.bin/eslint" ]; then
-      npx eslint --fix "$FILE_PATH" 2>/dev/null
+    elif command -v npx &>/dev/null; then
+      # In monorepos, run eslint from the file's nearest package directory
+      PKG_DIR="$DIR"
+      while [ "$PKG_DIR" != "$PROJECT_ROOT" ] && [ "$PKG_DIR" != "/" ]; do
+        if [ -f "$PKG_DIR/package.json" ]; then
+          break
+        fi
+        PKG_DIR=$(dirname "$PKG_DIR")
+      done
+      if [ -f "$PKG_DIR/node_modules/.bin/eslint" ]; then
+        (cd "$PKG_DIR" && npx eslint --fix "$FILE_PATH" 2>/dev/null)
+      elif [ -f "node_modules/.bin/eslint" ]; then
+        npx eslint --fix "$FILE_PATH" 2>/dev/null
+      fi
     fi
     ;;
   py)
