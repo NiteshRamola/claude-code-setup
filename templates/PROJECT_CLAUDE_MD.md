@@ -44,7 +44,7 @@ docker compose build          # Build all containers
 
 ## Conventions
 - All new features require a SPEC.md before implementation
-- 100% test coverage required
+- High test coverage on business logic, edge cases, error paths
 - No secrets in code — use .env.example as template
 - All services containerized via docker-compose
 - APIs documented in swagger.yaml / OpenAPI spec
